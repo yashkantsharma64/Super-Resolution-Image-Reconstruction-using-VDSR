@@ -8,58 +8,10 @@ from skimage import color, io
 from skimage.metrics import peak_signal_noise_ratio as psnr
 import math
 
-
 # Function to load and preprocess a user-provided image
 def load_user_image(image_path):
     image = io.imread(image_path)
     return image
-
-# Function to apply sliding window and reconstruct the image with batch processing
-# def sliding_window_super_resolve(model, lr_image, patch_size, stride, batch_size):
-#     h, w = lr_image.shape[:2]
-#     c = 1 if lr_image.ndim == 2 else lr_image.shape[2]
-#     output = np.zeros((h, w) if c == 1 else (h, w, c))
-#     count_map = np.zeros_like(output)
-
-#     patches = []
-#     patch_coords = []
-
-#     # Collect patches
-#     for i in range(0, h - patch_size + 1, stride):
-#         for j in range(0, w - patch_size + 1, stride):
-#             lr_patch = lr_image[i:i + patch_size, j:j + patch_size]
-#             patches.append(lr_patch)
-#             patch_coords.append((i, j))
-
-#             if len(patches) == batch_size:
-#                 batch = np.array(patches).astype(np.float32) / 255.0
-#                 sr_patches = model.predict(batch)
-#                 for k, (x, y) in enumerate(patch_coords):
-#                     sr_patch = sr_patches[k].squeeze() * 255.0
-#                     if c == 1:
-#                         output[x:x + patch_size, y:y + patch_size] += sr_patch
-#                     else:
-#                         output[x:x + patch_size, y:y + patch_size, :] += sr_patch
-#                     count_map[x:x + patch_size, y:y + patch_size] += 1
-#                 patches = []
-#                 patch_coords = []
-
-#     # Process remaining patches
-#     if patches:
-#         batch = np.array(patches).astype(np.float32) / 255.0
-#         sr_patches = model.predict(batch)
-#         for k, (x, y) in enumerate(patch_coords):
-#             sr_patch = sr_patches[k].squeeze() * 255.0
-#             if c == 1:
-#                 output[x:x + patch_size, y:y + patch_size] += sr_patch
-#             else:
-#                 output[x:x + patch_size, y:y + patch_size, :] += sr_patch
-#             count_map[x:x + patch_size, y:y + patch_size] += 1
-
-#     # Normalize output by count_map, ensuring no division by zero
-#     output = np.divide(output, count_map, out=np.zeros_like(output), where=count_map != 0)
-#     return output
-
 
 def sliding_window_super_resolve(model, lr_image, patch_size, stride, batch_size):
     h, w = lr_image.shape[:2]
@@ -122,8 +74,6 @@ def sliding_window_super_resolve(model, lr_image, patch_size, stride, batch_size
     # Crop the image back to its original size
     output = output[:h, :w] if c == 1 else output[:h, :w, :]
     return np.clip(output, 0, 255).astype(np.uint8)
-
-
 
 # Function to super resolve a user-provided image
 def super_resolve_user_image(model_path, image_path, patch_size, stride, batch_size=64):
