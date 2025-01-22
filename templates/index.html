@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Super Resolution</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Image Super Resolution</h1>
+        <form id="uploadForm">
+            <label for="imageInput">Choose an image:</label>
+            <input type="file" id="imageInput" name="image" accept="image/*" required>
+            <button type="submit">Upscale Image</button>
+        </form>
+        <div id="result" class="hidden">
+            <h2>Comparison</h2>
+            <div class="images">
+                <div>
+                    <h3>Original</h3>
+                    <img id="originalImage" src="" alt="Original Image">
+                </div>
+                <div>
+                    <h3>Super Resolved</h3>
+                    <img id="superResolvedImage" src="" alt="Super Resolved Image">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('uploadForm').addEventListener('submit', async function(event) {
+            event.preventDefault();
+            const formData = new FormData();
+            const imageFile = document.getElementById('imageInput').files[0];
+            formData.append('image', imageFile);
+
+            const response = await fetch('http://127.0.0.1:5000/upload', {
+                method: 'POST',
+                body: formData
+            });
+
+            const result = await response.json();
+            if (response.ok) {
+                document.getElementById('result').classList.remove('hidden');
+                document.getElementById('originalImage').src = `http://127.0.0.1:5000/uploads/${imageFile.name}`;
+                document.getElementById('superResolvedImage').src = `http://127.0.0.1:5000/results/sr_${imageFile.name}`;
+            } else {
+                alert('Error: ' + result.error);
+            }
+        });
+    </script>
+</body>
+</html>
